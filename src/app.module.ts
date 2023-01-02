@@ -3,6 +3,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Task } from './tasks/task.entity';
+import { AuthModule } from './auth/auth.module';
 
 // export const AppDataSource = new DataSource({
 //   type: 'postgres',
@@ -31,7 +32,8 @@ import { Task } from './tasks/task.entity';
       password: 'postgres',
       autoLoadEntities: true,
       synchronize: true
-    })
+    }),
+    AuthModule
   ]
 })
 export class AppModule {
