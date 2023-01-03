@@ -1,37 +1,31 @@
 import { Module } from '@nestjs/common';
 import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { Task } from './tasks/task.entity';
 import { AuthModule } from './auth/auth.module';
-
-// export const AppDataSource = new DataSource({
-//   type: 'postgres',
-//   host: 'localhost',
-//   port: 5432,
-//   database: 'task-management',
-//   username: 'postgres',
-//   password: 'postgres',
-//   synchronize: true,
-//   entities: [Task]
-// });
-//
-// AppDataSource.initialize()
-//   .then(() => console.log('Data Source has been initialized!'))
-//   .catch(err => console.error('Error during Data Source initialization', err));
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as process from 'process';
+import { configSchema } from './config.schema';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: [`.env.stage.${process.env.STAGE}`],
+      validationSchema: configSchema
+    }),
     TasksModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      database: 'task-management',
-      username: 'postgres',
-      password: 'postgres',
-      autoLoadEntities: true,
-      synchronize: true
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        type: 'postgres',
+        autoLoadEntities: true,
+        synchronize: true,
+        host: config.get('DB_HOST'),
+        port: config.get('DB_PORT'),
+        database: config.get('DB_DATABASE'),
+        username: config.get('DB_USERNAME'),
+        password: config.get('DB_PASSWORD')
+      })
     }),
     AuthModule
   ]
